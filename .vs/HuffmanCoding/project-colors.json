@@ -1,0 +1,16 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "a868c620-d62b-4507-9ef4-5721ac488d25": {
+      "ProjectGuid": "a868c620-d62b-4507-9ef4-5721ac488d25",
+      "DisplayName": "TIiK_Lab1_Siwak_WCY20IY5S1",
+      "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 1
+}
