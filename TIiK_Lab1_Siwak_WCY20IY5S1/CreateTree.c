@@ -16,7 +16,7 @@ void CreateTree(HuffmanNode symbolFrequency[]) {
 		}
 	}
 	int x = -1;
-	for(int i = 512 - 1; i >= 0; i-=2)
+	for(int i = 512 - 1; i >= 0; i--)
 	{
 		if (symbolFrequency[i].Frequency > 0
 			&& symbolFrequency[i].Ascii != '\0') {
@@ -88,29 +88,35 @@ TreeNode* SeekRightNode(TreeNode* node) {
 	return emptyNode;
 }
 
+TreeNode* FindNodeByAscii(int ascii) {
+	for (int i = 0; i < 512; i++) {
+		if (TreeNodes[i].Ascii == ascii) {
+			return &TreeNodes[i];
+		}
+	}
+}
+
 EncodedCharacter codeTable[OUTPUT_ARRAY_LENGTH] = { {0} };
 
 void CreateCodeTable() {
 	int j = 0;
 	int i = 512 - 1;
 	TreeNode* currentNode = calloc(1, sizeof(TreeNode));
+
 	for (; i >= 0; i--)
 	{
 		if (TreeNodes[i].Frequency != 0)
 			break;
 	}
-	currentNode->LeftChild = TreeNodes[i].LeftChild;
-	currentNode->RightChild = TreeNodes[i].RightChild;
-	currentNode->Ascii = TreeNodes[i].Ascii;
-	currentNode->Frequency = TreeNodes[i].Frequency;
 	int alreadyVisited[OUTPUT_ARRAY_LENGTH] = { {0} };
 	int h = 0;
 	int visited = 0;
 	int leftSubtree = 1;
-	while (1) { //generalnie sporo case by trzeba obczaic zeby zobaczyc czy git dziala
-		if (leftSubtree) { // obecnie chyba dobrym pomyslem jest ustawianie parentow, i wtedy gdy left i right child sa visited to parent tez visited, powinno zala
-			while (currentNode->LeftChild != 0 && currentNode->RightChild != 0) { // twic sprawe
-				if (currentNode->LeftChild != 0) {//ALBO dodaj do treeNode pole visited, wtedy bedziesz mogl sprawdzic, czy potomkowie sa visited
+	int k = 0;
+	while (h < 256) { 
+		if (leftSubtree) {
+			while (currentNode->LeftChild != 0 && currentNode->RightChild != 0) {
+				if (currentNode->LeftChild != 0) {
 					for (int i = 0; i < OUTPUT_ARRAY_LENGTH; i++) {
 						if (currentNode->LeftChild == alreadyVisited[i]) {
 							visited = 1;
@@ -120,15 +126,36 @@ void CreateCodeTable() {
 					if (!visited) {
 						currentNode = SeekLeftNode(currentNode);
 						codeTable[h].code[j] = 0;
+						if (currentNode->Ascii > 0)
 						codeTable[h].Ascii = currentNode->Ascii;
 					}
 				}
-				if (currentNode->RightChild != 0 && visited == 1) { //blokada do visit
+				if (currentNode->RightChild != 0 && visited == 1) {
 					currentNode = SeekRightNode(currentNode);
 					codeTable[h].code[j] = 1;
+					if (currentNode->Ascii > 0)
 					codeTable[h].Ascii = currentNode->Ascii;
 				}
 				visited = 0;
+
+				int dontVisitParentNode = 0;
+				for (int i = 0; i < 512; i++)
+				{
+					if (currentNode->LeftChild == alreadyVisited[i]
+						&& alreadyVisited[i] != 0) {
+						dontVisitParentNode++;
+					}
+					if (currentNode->RightChild == alreadyVisited[i]
+						&& alreadyVisited[i] != 0) {
+						dontVisitParentNode++;
+					}
+				}
+
+				if (dontVisitParentNode == 2) {
+					if (k < 256)
+					alreadyVisited[k] = currentNode->Ascii;
+					k++;
+				}
 
 				j++;
 			}
@@ -145,30 +172,76 @@ void CreateCodeTable() {
 					if (!visited) {
 						currentNode = SeekRightNode(currentNode);
 						codeTable[h].code[j] = 1;
+						if(currentNode->Ascii > 0)
 						codeTable[h].Ascii = currentNode->Ascii;
 					}
 				}
-				if (currentNode->LeftChild != 0 && visited == 1) { //blokada do visit
+				if (currentNode->LeftChild != 0 && visited == 1) {
 					currentNode = SeekLeftNode(currentNode);
 					codeTable[h].code[j] = 0;
+					if (currentNode->Ascii > 0)
 					codeTable[h].Ascii = currentNode->Ascii;
 				}
 				visited = 0;
 
+				int dontVisitParentNode = 0;
+				for (int i = 0; i < OUTPUT_ARRAY_LENGTH; i++)
+				{
+					if (currentNode->LeftChild == alreadyVisited[i]
+						&& alreadyVisited[i] != 0) {
+						dontVisitParentNode++;
+					}
+					if (currentNode->RightChild == alreadyVisited[i]
+						&& alreadyVisited[i] != 0) {
+						dontVisitParentNode++;
+					}
+				}
+
+				if (dontVisitParentNode == 2) {
+					if (k < 256)
+					alreadyVisited[k] = currentNode->Ascii;
+					k++;
+				}
+
 				j++;
 			}
 		}
+
+
 		codeTable[h].code[j] = 9;
+
 		if (codeTable[h].code[j - 1] == 1) {
 			leftSubtree = 0;
 		}
-		alreadyVisited[h] = currentNode->Ascii;
+
+		if(k<256)
+		alreadyVisited[k] = currentNode->Ascii;
 		j = 0;
+		k++;
 		h++;
 
 		currentNode->LeftChild = TreeNodes[i].LeftChild;
 		currentNode->RightChild = TreeNodes[i].RightChild;
 		currentNode->Ascii = TreeNodes[i].Ascii;
 		currentNode->Frequency = TreeNodes[i].Frequency;
+	}
+}
+
+void WriteCodeTableToFile() {
+	FILE* outputFilePointer = fopen("code.table", "w");
+	if (outputFilePointer == NULL)
+		exit(1);
+
+	for (int i = 0; i < OUTPUT_ARRAY_LENGTH; i++) {
+		if (codeTable[i].Ascii > 0) {
+			fprintf(outputFilePointer, "%i (%c)\t", codeTable[i].Ascii,
+				codeTable[i].Ascii);
+			int j = 0;
+			while(codeTable[i].code[j] != 9){
+				fprintf(outputFilePointer, "%i", codeTable[i].code[j]);
+				j++;
+			}
+			fprintf(outputFilePointer, "\n");
+		}
 	}
 }

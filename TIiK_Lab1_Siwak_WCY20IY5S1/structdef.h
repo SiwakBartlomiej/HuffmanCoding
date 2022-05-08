@@ -6,6 +6,7 @@ struct TreeNode {
     int Parent;
     int LeftChild;
     int RightChild;
+    int Visited;
 };
 typedef struct TreeNode TreeNode;
 

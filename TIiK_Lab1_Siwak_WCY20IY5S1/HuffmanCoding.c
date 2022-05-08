@@ -7,7 +7,7 @@
 const char filePath[] = "C:\\Users\\dravi\\source\\repos\\TIiK_Lab1_Siwak_WCY20IY5S1\\TIiK_Lab1_Siwak_WCY20IY5S1\\XD.txt";
 
 void WriteModelToFile(HuffmanNode output[], int length) {
-    FILE* outputFilePointer = fopen("HuffmanModel.txt", "w");
+    FILE* outputFilePointer = fopen("huffman.model", "w");
     if (outputFilePointer == NULL)
         exit(1);
 
@@ -38,7 +38,7 @@ int main()
 {
     HuffmanNode output[512] = { {0} };
     unsigned char* buffer;
-    FILE* filePointer = fopen(filePath, "rb");
+    FILE* filePointer = fopen(filePath, "r");
 
     if (filePointer == NULL) {
         perror("Nie udalo sie otworzyc pliku.");
@@ -67,5 +67,6 @@ int main()
     WriteModelToFile(output, length);
     CreateTree(output);
     SaveTreeToFile();
-    //CreateCodeTable();
+    CreateCodeTable();
+    WriteCodeTableToFile();
 }
